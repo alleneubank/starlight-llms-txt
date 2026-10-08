@@ -88,6 +88,9 @@ for (const entry of docs) {
 const BASE_PATH = ensureTrailingSlash(starlightLllmsTxtContext.base);
 
 export const onRequest = defineMiddleware(async (context, next) => {
+	// Prerendered pages have no request headers to negotiate on; serving them is the host's job.
+	if (context.isPrerendered) return next();
+
 	const url = new URL(context.request.url);
 	const pathname = url.pathname;
 

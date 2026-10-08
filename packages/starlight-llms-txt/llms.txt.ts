@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { starlightLllmsTxtContext } from 'virtual:starlight-llms-txt/context';
-import { getDocsEntries } from './docsEntries';
-import { defaultLang, docEntryToMarkdownSlug, ensureTrailingSlash, getSiteTitle } from './utils';
+import { getDocsEntries, sortDocsByPriority } from './docsEntries';
+import { docEntryToMarkdownSlug, ensureTrailingSlash, getSiteTitle } from './utils';
 
 // Explicitly set this to prerender so it works the same way for sites in `server` mode.
 export const prerender = true;
@@ -35,9 +35,7 @@ export const GET: APIRoute = async (context) => {
 		].join('\n')
 	);
 
-	const docs = await getDocsEntries();
-	const collator = new Intl.Collator(defaultLang);
-	docs.sort((a, b) => collator.compare(a.id, b.id));
+	const docs = sortDocsByPriority(await getDocsEntries());
 	const pages = docs
 		.map((doc) => {
 			const slug = docEntryToMarkdownSlug(doc);

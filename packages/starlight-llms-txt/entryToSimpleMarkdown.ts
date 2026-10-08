@@ -4,6 +4,7 @@ import { experimental_AstroContainer } from 'astro/container';
 import { render, type CollectionEntry } from 'astro:content';
 import type { RootContent } from 'hast';
 import { matches, select, selectAll } from 'hast-util-select';
+import { toString } from 'hast-util-to-string';
 import rehypeParse from 'rehype-parse';
 import rehypeRemark from 'rehype-remark';
 import remarkGfm from 'remark-gfm';
@@ -104,6 +105,20 @@ const htmlToMarkdownPipeline = unified()
 							}
 						}
 					}
+				}
+				// Expressive Code renders each line as a block-level `div.ec-line` and keeps a `\n`
+				// text node inside empty lines, so converting the markup as-is doubles every blank
+				// line. Replace the line markup with its plain text, one line per `.ec-line`.
+				const lines = code ? selectAll('.ec-line', code) : [];
+				if (code && lines.length > 0) {
+					code.children = [
+						{
+							type: 'text',
+							value: lines
+								.map((line) => toString(select('.code', line) ?? line).replace(/\n$/, ''))
+								.join('\n'),
+						},
+					];
 				}
 			}
 		};
